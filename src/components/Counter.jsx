@@ -7,13 +7,13 @@ const Counter = () => {
   const { roomExp, leaveCall, view } = useCallState();
   const [counter, setCounter] = useState("");
 
-  let interval;
   useEffect(() => {
     /**
      * Rooms exist for 10 minutes from creation.
      * We use the expiry timestamp to show participants
      * how long they have left in the room.
      */
+    let interval;
     clearInterval(interval);
     interval = setInterval(() => {
       let secs = Math.round((roomExp - Date.now()) / 1000);
@@ -30,7 +30,7 @@ const Counter = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [roomExp, view]);
+  }, [roomExp, view, leaveCall]);
 
   return (
     <Container>

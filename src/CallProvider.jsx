@@ -57,7 +57,7 @@ export const CallProvider = ({ children }) => {
     return result;
   };
 
-  const joinRoom = async ({ userName, name, moderator }) => {
+  const joinRoom = useCallback(async ({ userName, name, moderator }) => {
     if (callFrame) {
       callFrame.leave();
     }
@@ -128,7 +128,7 @@ export const CallProvider = ({ children }) => {
      * if a mod isn't present. Since these demo rooms only last ten
      * minutes we're not currently checking this.
      */
-  };
+  }, [callFrame, room?.name]);
 
   const handleJoinedMeeting = (evt) => {
     setUpdateParticipants(`joined-${evt?.participant?.user_id}-${Date.now()}`);
@@ -147,7 +147,7 @@ export const CallProvider = ({ children }) => {
     setActiveSpeakerId(evt?.activeSpeaker?.peerId);
   };
 
-  const playTrack = (evt) => {
+  const playTrack = useCallback((evt) => {
     console.log(
       "[TRACK STARTED]",
       evt.participant && evt.participant.session_id
@@ -155,19 +155,19 @@ export const CallProvider = ({ children }) => {
     setUpdateParticipants(
       `track-started-${evt?.participant?.user_id}-${Date.now()}`
     );
-  };
-  const destroyTrack = (evt) => {
+  }, []);
+  const destroyTrack = useCallback((evt) => {
     console.log("[DESTROY TRACK]", evt);
     setUpdateParticipants(
       `track-stopped-${evt?.participant?.user_id}-${Date.now()}`
     );
-  };
+  }, []);
 
-  const getAccountType = (username) => {
+  const getAccountType = useCallback((username) => {
     if (!username) return;
     // check last three letters to compare to account type constants
     return username.slice(-3);
-  };
+  }, []);
 
   const leaveCall = useCallback(() => {
     if (!callFrame) return;
@@ -200,11 +200,11 @@ export const CallProvider = ({ children }) => {
     leaveCall();
   }, [participants, removeFromCall, leaveCall]);
 
-  const displayName = (username) => {
+  const displayName = useCallback((username) => {
     if (!username) return;
     // return name without account type
     return username.slice(0, username.length - 4);
-  };
+  }, []);
 
   const updateUsername = useCallback(
     (newAccountType) => {
@@ -224,7 +224,7 @@ export const CallProvider = ({ children }) => {
        */
       callFrame.setUserName(`${display}_${newAccountType}`);
     },
-    [callFrame]
+    [callFrame, displayName]
   );
 
   const handleMute = useCallback(
@@ -348,6 +348,8 @@ export const CallProvider = ({ children }) => {
             //seeya
             leaveCall();
             break;
+          default:
+            break;
         }
       } catch (e) {
         console.error(e);
@@ -383,7 +385,16 @@ export const CallProvider = ({ children }) => {
       callFrame.off("track-started", playTrack);
       callFrame.off("track-stopped", destroyTrack);
     };
-  }, [callFrame, participants, destroyTrack, playTrack, updateUsername]);
+  }, [
+    callFrame,
+    participants,
+    destroyTrack,
+    playTrack,
+    updateUsername,
+    joinRoom,
+    leaveCall,
+    room?.name,
+  ]);
 
   /**
    * Update participants for any event that happens
