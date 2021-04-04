@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { INCALL, useCallState } from "../CallProvider";
 import { SPEAKER, LISTENER, MOD } from "../App";
@@ -7,9 +7,11 @@ import Participant from "./Participant";
 import Counter from "./Counter";
 import MicIcon from "./MicIcon";
 import MutedIcon from "./MutedIcon";
+import SlideShow from "./SlideShow";
 import theme from "../theme";
+import "firebase/firestore";
 
-const InCall = () => {
+const InCall = ({ firebase }) => {
   const {
     participants,
     room,
@@ -23,6 +25,16 @@ const InCall = () => {
     endCall,
   } = useCallState();
   console.log(participants);
+  window.firebase = firebase;
+  useEffect(() => {
+    if (room?.name)
+      firebase
+        .firestore()
+        .collection("rooms")
+        .doc(`${room.name}`)
+        .set({ id: `${room.name}` })
+        .then(() => console.log(`done: rooms/${room.name}`));
+  }, [firebase, room?.name]);
 
   const local = useMemo((p) => participants?.filter((p) => p?.local)[0], [
     participants,
@@ -90,6 +102,9 @@ const InCall = () => {
 
   return (
     <Container hidden={view !== INCALL}>
+      {room?.name && (
+        <SlideShow firebase={firebase} docId={`rooms/${room.name}`} />
+      )}
       <CallHeader>
         <Header>Speakers</Header>
         <Counter />

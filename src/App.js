@@ -6,11 +6,28 @@ import logo from "./icons/logo.svg";
 import { SmallText } from "./components/shared/SmallText";
 import { CallProvider, INCALL, PREJOIN, useCallState } from "./CallProvider";
 
+import firebase from "firebase/app";
+import "firebase/firestore";
+
 export const MOD = "MOD";
 export const SPEAKER = "SPK";
 export const LISTENER = "LST";
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDJHZCGBf375eJqrg1ODh3tYqTJqWv8JLE",
+  authDomain: "audio-storm.firebaseapp.com",
+  projectId: "audio-storm",
+  storageBucket: "audio-storm.appspot.com",
+  messagingSenderId: "597472667094",
+  appId: "1:597472667094:web:31e864926ee13a17ebb077",
+  measurementId: "G-8GBESYHLPR",
+};
+
 const AppContent = () => {
+  if (firebase.apps.length < 1) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const { view } = useCallState();
   return (
     <AppContainer>
@@ -22,8 +39,8 @@ const AppContent = () => {
           </HeaderTop>
           <SmallText>An audio API demo from Daily</SmallText>
         </Header>
-        {view === PREJOIN && <PreJoinRoom />}
-        {view === INCALL && <InCall />}
+        {view === PREJOIN && <PreJoinRoom firebase={firebase}/>}
+        {view === INCALL && <InCall firebase={firebase}/>}
         <Link
           center={view === INCALL}
           href="https://docs.daily.co/docs/reference-docs"
